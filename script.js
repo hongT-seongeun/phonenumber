@@ -1,0 +1,163 @@
+(function () {
+  document.addEventListener('DOMContentLoaded', init);
+
+  function init() {
+    var params = new URLSearchParams(window.location.search);
+    var to = params.get('to');
+    if (to) {
+      initStudentMode(to);
+    } else {
+      initTeacherMode();
+    }
+  }
+
+  function onlyDigits(str) {
+    return (str || '').replace(/\D/g, '');
+  }
+
+  // ---------- 교사 설정 화면 ----------
+  function initTeacherMode() {
+    var screen = document.getElementById('teacher-screen');
+    screen.hidden = false;
+
+    var phoneInput = document.getElementById('teacher-phone');
+    var makeBtn = document.getElementById('make-link-btn');
+    var errorEl = document.getElementById('teacher-error');
+    var resultBox = document.getElementById('teacher-result');
+    var resultLink = document.getElementById('result-link');
+    var copyBtn = document.getElementById('copy-link-btn');
+    var copyStatus = document.getElementById('copy-link-status');
+
+    makeBtn.addEventListener('click', function () {
+      var digits = onlyDigits(phoneInput.value);
+      errorEl.hidden = true;
+      resultBox.hidden = true;
+
+      if (digits.length < 9) {
+        errorEl.textContent = '전화번호를 다시 확인해주세요. (숫자만 9자리 이상 입력)';
+        errorEl.hidden = false;
+        return;
+      }
+
+      var base = window.location.origin + window.location.pathname;
+      var link = base + '?to=' + digits;
+      resultLink.textContent = link;
+      resultBox.hidden = false;
+      copyStatus.textContent = '';
+
+      copyBtn.onclick = function () {
+        copyText(link, copyStatus);
+      };
+    });
+  }
+
+  // ---------- 학생 입력 화면 ----------
+  function initStudentMode(rawTo) {
+    var toDigits = onlyDigits(rawTo);
+
+    if (toDigits.length < 9) {
+      document.getElementById('student-error-screen').hidden = false;
+      return;
+    }
+
+    var screen = document.getElementById('student-screen');
+    screen.hidden = false;
+
+    var gradeSelect = document.getElementById('grade-select');
+    var classSelect = document.getElementById('class-select');
+    var numberSelect = document.getElementById('number-select');
+    var nameInput = document.getElementById('name-input');
+
+    fillSelect(gradeSelect, 1, 3, '학년');
+    fillSelect(classSelect, 1, 15, '반');
+    fillSelect(numberSelect, 1, 40, '번호');
+
+    var bubble = document.getElementById('preview-bubble');
+    var sendBtn = document.getElementById('send-btn');
+    var copyMsgBtn = document.getElementById('copy-msg-btn');
+    var copyMsgStatus = document.getElementById('copy-msg-status');
+
+    var PLACEHOLDER_TEXT = '학년·반·번호·이름을 모두 입력하면 여기에 미리보기가 나타나요';
+
+    function currentMessage() {
+      var grade = gradeSelect.value;
+      var cls = classSelect.value;
+      var num = numberSelect.value;
+      var name = nameInput.value.trim();
+      if (!grade || !cls || !num || !name) return null;
+      return '[등록] ' + grade + '학년' + cls + '반 ' + num + '번 ' + name;
+    }
+
+    function render() {
+      var msg = currentMessage();
+      if (msg) {
+        bubble.textContent = msg;
+        bubble.classList.remove('placeholder');
+
+        sendBtn.classList.remove('btn-disabled');
+        sendBtn.setAttribute('aria-disabled', 'false');
+        sendBtn.href = buildSmsLink(toDigits, msg);
+
+        copyMsgBtn.disabled = false;
+        copyMsgBtn.onclick = function () {
+          copyText(msg, copyMsgStatus);
+        };
+      } else {
+        bubble.textContent = PLACEHOLDER_TEXT;
+        bubble.classList.add('placeholder');
+
+        sendBtn.classList.add('btn-disabled');
+        sendBtn.setAttribute('aria-disabled', 'true');
+        sendBtn.removeAttribute('href');
+
+        copyMsgBtn.disabled = true;
+      }
+      copyMsgStatus.textContent = '';
+    }
+
+    [gradeSelect, classSelect, numberSelect].forEach(function (el) {
+      el.addEventListener('change', render);
+    });
+    nameInput.addEventListener('input', render);
+
+    render();
+  }
+
+  function fillSelect(select, min, max, unitLabel) {
+    var placeholder = document.createElement('option');
+    placeholder.value = '';
+    placeholder.textContent = unitLabel;
+    placeholder.disabled = true;
+    placeholder.selected = true;
+    select.appendChild(placeholder);
+
+    for (var i = min; i <= max; i++) {
+      var opt = document.createElement('option');
+      opt.value = i;
+      opt.textContent = i + unitLabel;
+      select.appendChild(opt);
+    }
+  }
+
+  function isIOS() {
+    return /iPhone|iPad|iPod/i.test(navigator.userAgent);
+  }
+
+  function buildSmsLink(phoneDigits, message) {
+    var encoded = encodeURIComponent(message);
+    var sep = isIOS() ? '&' : '?';
+    return 'sms:' + phoneDigits + sep + 'body=' + encoded;
+  }
+
+  function copyText(text, statusEl) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(function () {
+        statusEl.textContent = '복사했어요 ✅';
+      }, function () {
+        statusEl.textContent = '복사에 실패했어요. 직접 선택해서 복사해주세요.';
+      });
+    } else {
+      statusEl.textContent = '이 브라우저에서는 자동 복사가 안 돼요. 직접 선택해서 복사해주세요.';
+    }
+  }
+})();

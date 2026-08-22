@@ -1,0 +1,225 @@
+:root{
+  --board: #1e3329;
+  --board-edge: #16261e;
+  --chalk-white: #f3f1e7;
+  --chalk-yellow: #ffd76a;
+  --chalk-yellow-dim: #c9a84f;
+  --frame: #6b4a34;
+}
+
+*{ box-sizing: border-box; }
+
+body{
+  margin:0;
+  min-height:100vh;
+  background:#0d1512;
+  font-family:'Noto Sans KR', sans-serif;
+  color:var(--chalk-white);
+  display:flex;
+  justify-content:center;
+  align-items:flex-start;
+  padding:24px 12px;
+}
+
+.card{
+  width:100%;
+  max-width:420px;
+  background: linear-gradient(180deg, var(--board) 0%, var(--board-edge) 100%);
+  border: 10px solid var(--frame);
+  border-radius:28px;
+  padding:28px 22px 32px;
+  box-shadow: 0 20px 50px rgba(0,0,0,.5), inset 0 0 0 2px rgba(255,255,255,0.03);
+  margin-top: 4vh;
+}
+
+@media (max-width: 420px){
+  .card{
+    border-width:6px;
+    border-radius:20px;
+    padding:22px 16px 26px;
+    margin-top:0;
+  }
+}
+
+h1.title{
+  font-family:'Gaegu', cursive;
+  font-size:28px;
+  color:var(--chalk-yellow);
+  text-align:center;
+  margin:4px 0 6px;
+  text-shadow: 0 0 8px rgba(255,215,106,0.15);
+}
+
+p.subtitle{
+  text-align:center;
+  font-size:13px;
+  color:#cfd8d2;
+  margin:0 0 22px;
+  line-height:1.6;
+}
+
+label, legend{
+  display:block;
+  font-size:13px;
+  color:var(--chalk-white);
+  margin:14px 0 6px;
+  font-weight:500;
+  padding:0;
+}
+
+.field-group{
+  border:none;
+  margin:0;
+  padding:0;
+}
+
+input[type=tel], input[type=text]{
+  width:100%;
+  padding:12px 14px;
+  border-radius:10px;
+  border:none;
+  background:#fbf9f2;
+  color:#222;
+  font-size:15px;
+  font-family:'Noto Sans KR', sans-serif;
+}
+
+input::placeholder{ color:#999; }
+
+.row3{ display:grid; grid-template-columns: repeat(3,1fr); gap:8px; }
+
+select{
+  width:100%;
+  padding:11px 8px;
+  border-radius:10px;
+  border:none;
+  background:#fbf9f2;
+  color:#222;
+  font-size:14px;
+  font-family:'Noto Sans KR', sans-serif;
+}
+
+.btn{
+  display:block;
+  width:100%;
+  text-align:center;
+  padding:14px;
+  border-radius:12px;
+  border:none;
+  font-family:'Gaegu', cursive;
+  font-size:20px;
+  font-weight:700;
+  cursor:pointer;
+  margin-top:18px;
+  text-decoration:none;
+}
+
+.btn-primary{
+  background:var(--chalk-yellow);
+  color:#1e2e24;
+  box-shadow: 0 6px 0 var(--chalk-yellow-dim);
+}
+
+.btn-primary:active{ transform:translateY(3px); box-shadow:0 3px 0 var(--chalk-yellow-dim); }
+
+.btn-disabled{
+  background:#3a4a42 !important;
+  color:#7c8a83 !important;
+  box-shadow:none !important;
+  cursor:not-allowed;
+  pointer-events:none;
+}
+
+.btn-ghost{
+  background:transparent;
+  border:2px solid rgba(255,255,255,0.25);
+  color:var(--chalk-white);
+  font-family:'Noto Sans KR', sans-serif;
+  font-size:14px;
+  font-weight:500;
+  box-shadow:none;
+  padding:11px;
+}
+
+.btn-ghost:disabled{
+  opacity:.5;
+  cursor:not-allowed;
+}
+
+.result-box{
+  margin-top:16px;
+  background:rgba(255,215,106,0.08);
+  border:1.5px dashed var(--chalk-yellow-dim);
+  border-radius:10px;
+  padding:14px;
+  font-size:12.5px;
+  word-break:break-all;
+  color:var(--chalk-white);
+  line-height:1.6;
+}
+
+.result-box strong{
+  color:var(--chalk-yellow);
+  display:block;
+  margin-bottom:6px;
+  font-family:'Noto Sans KR';
+  font-weight:700;
+  font-size:12px;
+}
+
+.error-text{
+  color:#ff8a8a;
+  font-size:13px;
+  margin:10px 2px 0;
+}
+
+.note-text{
+  color:#8ea099;
+  font-size:11.5px;
+  text-align:center;
+  margin:20px 0 0;
+  line-height:1.6;
+}
+
+.status-text{
+  font-size:12px;
+  color:var(--chalk-yellow);
+  text-align:center;
+  margin:8px 0 0;
+  min-height:14px;
+}
+
+.preview-label{
+  margin-top:24px;
+  font-size:12px;
+  color:#a9b8b1;
+  text-align:center;
+  letter-spacing:.02em;
+}
+
+.bubble-wrap{
+  margin-top:10px;
+  min-height:70px;
+  display:flex;
+  justify-content:flex-end;
+}
+
+.bubble{
+  max-width:78%;
+  background:var(--chalk-yellow);
+  color:#26311f;
+  padding:12px 16px;
+  border-radius:18px 18px 4px 18px;
+  font-family:'Gaegu', cursive;
+  font-size:19px;
+  line-height:1.4;
+  box-shadow:0 3px 10px rgba(0,0,0,.25);
+}
+
+.bubble.placeholder{
+  background:rgba(255,255,255,0.08);
+  color:#8a978f;
+  font-family:'Noto Sans KR', sans-serif;
+  font-size:13px;
+  border:1px dashed rgba(255,255,255,0.2);
+}
