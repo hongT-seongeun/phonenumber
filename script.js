@@ -15,6 +15,21 @@
     return (str || '').replace(/\D/g, '');
   }
 
+  // 전화번호가 링크에 숫자 그대로 노출되지 않도록 base64url로 인코딩/디코딩
+  function encodePhone(digits) {
+    return btoa(digits).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  }
+
+  function decodePhone(encoded) {
+    var b64 = encoded.replace(/-/g, '+').replace(/_/g, '/');
+    while (b64.length % 4) b64 += '=';
+    try {
+      return atob(b64);
+    } catch (e) {
+      return '';
+    }
+  }
+
   // ---------- 교사 설정 화면 ----------
   function initTeacherMode() {
     var screen = document.getElementById('teacher-screen');
@@ -40,7 +55,7 @@
       }
 
       var base = window.location.origin + window.location.pathname;
-      var link = base + '?to=' + digits;
+      var link = base + '?to=' + encodePhone(digits);
       resultLink.textContent = link;
       resultBox.hidden = false;
       copyStatus.textContent = '';
@@ -53,7 +68,7 @@
 
   // ---------- 학생 입력 화면 ----------
   function initStudentMode(rawTo) {
-    var toDigits = onlyDigits(rawTo);
+    var toDigits = onlyDigits(decodePhone(rawTo));
 
     if (toDigits.length < 9) {
       document.getElementById('student-error-screen').hidden = false;
@@ -68,14 +83,12 @@
     var numberSelect = document.getElementById('number-select');
     var nameInput = document.getElementById('name-input');
 
-    fillSelect(gradeSelect, 1, 3, '학년');
-    fillSelect(classSelect, 1, 15, '반');
-    fillSelect(numberSelect, 1, 40, '번호');
+    fillSelect(gradeSelect, 1, 3, '학년', '학년');
+    fillSelect(classSelect, 1, 15, '반', '반');
+    fillSelect(numberSelect, 1, 40, '번', '번호');
 
     var bubble = document.getElementById('preview-bubble');
     var sendBtn = document.getElementById('send-btn');
-    var copyMsgBtn = document.getElementById('copy-msg-btn');
-    var copyMsgStatus = document.getElementById('copy-msg-status');
 
     var PLACEHOLDER_TEXT = '학년·반·번호·이름을 모두 입력하면 여기에 미리보기가 나타나요';
 
@@ -97,11 +110,6 @@
         sendBtn.classList.remove('btn-disabled');
         sendBtn.setAttribute('aria-disabled', 'false');
         sendBtn.href = buildSmsLink(toDigits, msg);
-
-        copyMsgBtn.disabled = false;
-        copyMsgBtn.onclick = function () {
-          copyText(msg, copyMsgStatus);
-        };
       } else {
         bubble.textContent = PLACEHOLDER_TEXT;
         bubble.classList.add('placeholder');
@@ -109,10 +117,7 @@
         sendBtn.classList.add('btn-disabled');
         sendBtn.setAttribute('aria-disabled', 'true');
         sendBtn.removeAttribute('href');
-
-        copyMsgBtn.disabled = true;
       }
-      copyMsgStatus.textContent = '';
     }
 
     [gradeSelect, classSelect, numberSelect].forEach(function (el) {
@@ -123,10 +128,10 @@
     render();
   }
 
-  function fillSelect(select, min, max, unitLabel) {
+  function fillSelect(select, min, max, unitLabel, placeholderLabel) {
     var placeholder = document.createElement('option');
     placeholder.value = '';
-    placeholder.textContent = unitLabel;
+    placeholder.textContent = placeholderLabel || unitLabel;
     placeholder.disabled = true;
     placeholder.selected = true;
     select.appendChild(placeholder);
