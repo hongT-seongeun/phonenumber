@@ -36,6 +36,9 @@
     screen.hidden = false;
 
     var phoneInput = document.getElementById('teacher-phone');
+    var gradeLockSelect = document.getElementById('grade-lock');
+    var classMaxInput = document.getElementById('class-max');
+    var numberMaxInput = document.getElementById('number-max');
     var makeBtn = document.getElementById('make-link-btn');
     var errorEl = document.getElementById('teacher-error');
     var resultBox = document.getElementById('teacher-result');
@@ -54,8 +57,15 @@
         return;
       }
 
+      var classMax = clamp(parseInt(classMaxInput.value, 10), 1, 15, 7);
+      var numberMax = clamp(parseInt(numberMaxInput.value, 10), 1, 40, 28);
+      var gradeLock = gradeLockSelect.value;
+
       var base = window.location.origin + window.location.pathname;
-      var link = base + '?to=' + encodePhone(digits);
+      var link = base + '?to=' + encodePhone(digits) + '&c=' + classMax + '&n=' + numberMax;
+      if (gradeLock) {
+        link += '&g=' + gradeLock;
+      }
       resultLink.textContent = link;
       resultBox.hidden = false;
       copyStatus.textContent = '';
@@ -64,6 +74,11 @@
         copyText(link, copyStatus);
       };
     });
+  }
+
+  function clamp(value, min, max, fallback) {
+    if (isNaN(value)) return fallback;
+    return Math.min(Math.max(value, min), max);
   }
 
   // ---------- 학생 입력 화면 ----------
@@ -78,14 +93,31 @@
     var screen = document.getElementById('student-screen');
     screen.hidden = false;
 
-    var gradeSelect = document.getElementById('grade-select');
+    var params = new URLSearchParams(window.location.search);
+    var lockedGrade = clamp(parseInt(params.get('g'), 10), 1, 3, null);
+    var classMax = clamp(parseInt(params.get('c'), 10), 1, 15, 15);
+    var numberMax = clamp(parseInt(params.get('n'), 10), 1, 40, 40);
+
+    var gradeSlot = document.getElementById('grade-slot');
     var classSelect = document.getElementById('class-select');
     var numberSelect = document.getElementById('number-select');
     var nameInput = document.getElementById('name-input');
 
-    fillSelect(gradeSelect, 1, 3, '학년', '학년');
-    fillSelect(classSelect, 1, 15, '반', '반');
-    fillSelect(numberSelect, 1, 40, '번', '번호');
+    var gradeSelect = null;
+    if (lockedGrade) {
+      var fixedGrade = document.createElement('div');
+      fixedGrade.className = 'fixed-grade';
+      fixedGrade.textContent = lockedGrade + '학년';
+      gradeSlot.appendChild(fixedGrade);
+    } else {
+      gradeSelect = document.createElement('select');
+      gradeSelect.setAttribute('aria-label', '학년 선택');
+      gradeSlot.appendChild(gradeSelect);
+      fillSelect(gradeSelect, 1, 3, '학년', '학년');
+    }
+
+    fillSelect(classSelect, 1, classMax, '반', '반');
+    fillSelect(numberSelect, 1, numberMax, '번', '번호');
 
     var bubble = document.getElementById('preview-bubble');
     var sendBtn = document.getElementById('send-btn');
@@ -93,7 +125,7 @@
     var PLACEHOLDER_TEXT = '학년·반·번호·이름을 모두 입력하면 여기에 미리보기가 나타나요';
 
     function currentMessage() {
-      var grade = gradeSelect.value;
+      var grade = lockedGrade || gradeSelect.value;
       var cls = classSelect.value;
       var num = numberSelect.value;
       var name = nameInput.value.trim();
@@ -120,7 +152,9 @@
       }
     }
 
-    [gradeSelect, classSelect, numberSelect].forEach(function (el) {
+    var watchedEls = [classSelect, numberSelect];
+    if (gradeSelect) watchedEls.push(gradeSelect);
+    watchedEls.forEach(function (el) {
       el.addEventListener('change', render);
     });
     nameInput.addEventListener('input', render);
