@@ -90,6 +90,7 @@ input::placeholder{ color:#999; }
 
 .row3{ display:grid; grid-template-columns: repeat(3,1fr); gap:8px; }
 .row2{ display:grid; grid-template-columns: repeat(2,1fr); gap:8px; }
+.row2.single{ grid-template-columns: 1fr; }
 
 .section-tag{
   font-size:11px;

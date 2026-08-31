@@ -37,6 +37,9 @@
 
     var phoneInput = document.getElementById('teacher-phone');
     var gradeLockSelect = document.getElementById('grade-lock');
+    var classLockSelect = document.getElementById('class-lock');
+    var classMaxWrap = document.getElementById('class-max-wrap');
+    var rangeRow = document.getElementById('range-row');
     var classMaxInput = document.getElementById('class-max');
     var numberMaxInput = document.getElementById('number-max');
     var makeBtn = document.getElementById('make-link-btn');
@@ -45,6 +48,14 @@
     var resultLink = document.getElementById('result-link');
     var copyBtn = document.getElementById('copy-link-btn');
     var copyStatus = document.getElementById('copy-link-status');
+
+    function updateClassMaxVisibility() {
+      var locked = !!classLockSelect.value;
+      classMaxWrap.hidden = locked;
+      rangeRow.classList.toggle('single', locked);
+    }
+    classLockSelect.addEventListener('change', updateClassMaxVisibility);
+    updateClassMaxVisibility();
 
     makeBtn.addEventListener('click', function () {
       var digits = onlyDigits(phoneInput.value);
@@ -57,12 +68,19 @@
         return;
       }
 
+      var classLock = classLockSelect.value;
       var classMax = clamp(parseInt(classMaxInput.value, 10), 1, 15, 7);
       var numberMax = clamp(parseInt(numberMaxInput.value, 10), 1, 40, 28);
       var gradeLock = gradeLockSelect.value;
 
       var base = window.location.origin + window.location.pathname;
-      var link = base + '?to=' + encodePhone(digits) + '&c=' + classMax + '&n=' + numberMax;
+      var link = base + '?to=' + encodePhone(digits);
+      if (classLock) {
+        link += '&fc=' + classLock;
+      } else {
+        link += '&c=' + classMax;
+      }
+      link += '&n=' + numberMax;
       if (gradeLock) {
         link += '&g=' + gradeLock;
       }
