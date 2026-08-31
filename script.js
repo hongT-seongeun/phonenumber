@@ -48,6 +48,8 @@
     var resultLink = document.getElementById('result-link');
     var copyBtn = document.getElementById('copy-link-btn');
     var copyStatus = document.getElementById('copy-link-status');
+    var qrCanvasWrap = document.getElementById('qr-canvas-wrap');
+    var downloadQrBtn = document.getElementById('download-qr-btn');
 
     function updateClassMaxVisibility() {
       var locked = !!classLockSelect.value;
@@ -86,6 +88,21 @@
       }
       resultLink.textContent = link;
       resultBox.hidden = false;
+
+      qrCanvasWrap.innerHTML = '';
+      new QRCode(qrCanvasWrap, {
+        text: link,
+        width: 160,
+        height: 160,
+        colorDark: '#000000',
+        colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.M
+      });
+
+      downloadQrBtn.onclick = function () {
+        downloadQrCode(qrCanvasWrap);
+      };
+
       copyStatus.textContent = '';
 
       copyBtn.onclick = function () {
@@ -218,6 +235,17 @@
     var encoded = encodeURIComponent(message);
     var sep = isIOS() ? '&' : '?';
     return 'sms:' + phoneDigits + sep + 'body=' + encoded;
+  }
+
+  function downloadQrCode(canvasWrap) {
+    var canvas = canvasWrap.querySelector('canvas');
+    if (!canvas) return;
+    var link = document.createElement('a');
+    link.download = '학생등록링크_QR.png';
+    link.href = canvas.toDataURL('image/png');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   }
 
   function copyText(text, statusEl) {
