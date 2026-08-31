@@ -113,11 +113,12 @@
 
     var params = new URLSearchParams(window.location.search);
     var lockedGrade = clamp(parseInt(params.get('g'), 10), 1, 3, null);
+    var lockedClass = clamp(parseInt(params.get('fc'), 10), 1, 15, null);
     var classMax = clamp(parseInt(params.get('c'), 10), 1, 15, 15);
     var numberMax = clamp(parseInt(params.get('n'), 10), 1, 40, 40);
 
     var gradeSlot = document.getElementById('grade-slot');
-    var classSelect = document.getElementById('class-select');
+    var classSlot = document.getElementById('class-slot');
     var numberSelect = document.getElementById('number-select');
     var nameInput = document.getElementById('name-input');
 
@@ -134,7 +135,19 @@
       fillSelect(gradeSelect, 1, 3, '학년', '학년');
     }
 
-    fillSelect(classSelect, 1, classMax, '반', '반');
+    var classSelect = null;
+    if (lockedClass) {
+      var fixedClass = document.createElement('div');
+      fixedClass.className = 'fixed-grade';
+      fixedClass.textContent = lockedClass + '반';
+      classSlot.appendChild(fixedClass);
+    } else {
+      classSelect = document.createElement('select');
+      classSelect.setAttribute('aria-label', '반 선택');
+      classSlot.appendChild(classSelect);
+      fillSelect(classSelect, 1, classMax, '반', '반');
+    }
+
     fillSelect(numberSelect, 1, numberMax, '번', '번호');
 
     var bubble = document.getElementById('preview-bubble');
@@ -144,7 +157,7 @@
 
     function currentMessage() {
       var grade = lockedGrade || gradeSelect.value;
-      var cls = classSelect.value;
+      var cls = lockedClass || classSelect.value;
       var num = numberSelect.value;
       var name = nameInput.value.trim();
       if (!grade || !cls || !num || !name) return null;
@@ -170,8 +183,9 @@
       }
     }
 
-    var watchedEls = [classSelect, numberSelect];
+    var watchedEls = [numberSelect];
     if (gradeSelect) watchedEls.push(gradeSelect);
+    if (classSelect) watchedEls.push(classSelect);
     watchedEls.forEach(function (el) {
       el.addEventListener('change', render);
     });
