@@ -37,6 +37,9 @@
 
     var phoneInput = document.getElementById('teacher-phone');
     var gradeLockSelect = document.getElementById('grade-lock');
+    var classLockSelect = document.getElementById('class-lock');
+    var classMaxWrap = document.getElementById('class-max-wrap');
+    var rangeRow = document.getElementById('range-row');
     var classMaxInput = document.getElementById('class-max');
     var numberMaxInput = document.getElementById('number-max');
     var makeBtn = document.getElementById('make-link-btn');
@@ -45,6 +48,16 @@
     var resultLink = document.getElementById('result-link');
     var copyBtn = document.getElementById('copy-link-btn');
     var copyStatus = document.getElementById('copy-link-status');
+    var qrCanvasWrap = document.getElementById('qr-canvas-wrap');
+    var downloadQrBtn = document.getElementById('download-qr-btn');
+
+    function updateClassMaxVisibility() {
+      var locked = !!classLockSelect.value;
+      classMaxWrap.hidden = locked;
+      rangeRow.classList.toggle('single', locked);
+    }
+    classLockSelect.addEventListener('change', updateClassMaxVisibility);
+    updateClassMaxVisibility();
 
     makeBtn.addEventListener('click', function () {
       var digits = onlyDigits(phoneInput.value);
@@ -57,17 +70,39 @@
         return;
       }
 
+      var classLock = classLockSelect.value;
       var classMax = clamp(parseInt(classMaxInput.value, 10), 1, 15, 7);
       var numberMax = clamp(parseInt(numberMaxInput.value, 10), 1, 40, 28);
       var gradeLock = gradeLockSelect.value;
 
       var base = window.location.origin + window.location.pathname;
-      var link = base + '?to=' + encodePhone(digits) + '&c=' + classMax + '&n=' + numberMax;
+      var link = base + '?to=' + encodePhone(digits);
+      if (classLock) {
+        link += '&fc=' + classLock;
+      } else {
+        link += '&c=' + classMax;
+      }
+      link += '&n=' + numberMax;
       if (gradeLock) {
         link += '&g=' + gradeLock;
       }
       resultLink.textContent = link;
       resultBox.hidden = false;
+
+      qrCanvasWrap.innerHTML = '';
+      new QRCode(qrCanvasWrap, {
+        text: link,
+        width: 160,
+        height: 160,
+        colorDark: '#000000',
+        colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.M
+      });
+
+      downloadQrBtn.onclick = function () {
+        downloadQrCode(qrCanvasWrap);
+      };
+
       copyStatus.textContent = '';
 
       copyBtn.onclick = function () {
@@ -95,11 +130,12 @@
 
     var params = new URLSearchParams(window.location.search);
     var lockedGrade = clamp(parseInt(params.get('g'), 10), 1, 3, null);
+    var lockedClass = clamp(parseInt(params.get('fc'), 10), 1, 15, null);
     var classMax = clamp(parseInt(params.get('c'), 10), 1, 15, 15);
     var numberMax = clamp(parseInt(params.get('n'), 10), 1, 40, 40);
 
     var gradeSlot = document.getElementById('grade-slot');
-    var classSelect = document.getElementById('class-select');
+    var classSlot = document.getElementById('class-slot');
     var numberSelect = document.getElementById('number-select');
     var nameInput = document.getElementById('name-input');
 
@@ -116,7 +152,19 @@
       fillSelect(gradeSelect, 1, 3, '학년', '학년');
     }
 
-    fillSelect(classSelect, 1, classMax, '반', '반');
+    var classSelect = null;
+    if (lockedClass) {
+      var fixedClass = document.createElement('div');
+      fixedClass.className = 'fixed-grade';
+      fixedClass.textContent = lockedClass + '반';
+      classSlot.appendChild(fixedClass);
+    } else {
+      classSelect = document.createElement('select');
+      classSelect.setAttribute('aria-label', '반 선택');
+      classSlot.appendChild(classSelect);
+      fillSelect(classSelect, 1, classMax, '반', '반');
+    }
+
     fillSelect(numberSelect, 1, numberMax, '번', '번호');
 
     var bubble = document.getElementById('preview-bubble');
@@ -126,7 +174,7 @@
 
     function currentMessage() {
       var grade = lockedGrade || gradeSelect.value;
-      var cls = classSelect.value;
+      var cls = lockedClass || classSelect.value;
       var num = numberSelect.value;
       var name = nameInput.value.trim();
       if (!grade || !cls || !num || !name) return null;
@@ -152,8 +200,9 @@
       }
     }
 
-    var watchedEls = [classSelect, numberSelect];
+    var watchedEls = [numberSelect];
     if (gradeSelect) watchedEls.push(gradeSelect);
+    if (classSelect) watchedEls.push(classSelect);
     watchedEls.forEach(function (el) {
       el.addEventListener('change', render);
     });
@@ -186,6 +235,17 @@
     var encoded = encodeURIComponent(message);
     var sep = isIOS() ? '&' : '?';
     return 'sms:' + phoneDigits + sep + 'body=' + encoded;
+  }
+
+  function downloadQrCode(canvasWrap) {
+    var canvas = canvasWrap.querySelector('canvas');
+    if (!canvas) return;
+    var link = document.createElement('a');
+    link.download = '학생등록링크_QR.png';
+    link.href = canvas.toDataURL('image/png');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   }
 
   function copyText(text, statusEl) {

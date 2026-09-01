@@ -24,16 +24,41 @@
 
     <p class="section-tag">학생 화면에서 보여줄 범위 (선택 사항)</p>
 
-    <label for="grade-lock">학년</label>
-    <select id="grade-lock">
-      <option value="">학생이 직접 선택</option>
-      <option value="1">1학년으로 고정</option>
-      <option value="2">2학년으로 고정</option>
-      <option value="3">3학년으로 고정</option>
-    </select>
-
     <div class="row2">
       <div>
+        <label for="grade-lock">학년</label>
+        <select id="grade-lock">
+          <option value="">학생이 직접 선택</option>
+          <option value="1">1학년으로 고정</option>
+          <option value="2">2학년으로 고정</option>
+          <option value="3">3학년으로 고정</option>
+        </select>
+      </div>
+      <div>
+        <label for="class-lock">반</label>
+        <select id="class-lock">
+          <option value="">학생이 직접 선택</option>
+          <option value="1">1반으로 고정</option>
+          <option value="2">2반으로 고정</option>
+          <option value="3">3반으로 고정</option>
+          <option value="4">4반으로 고정</option>
+          <option value="5">5반으로 고정</option>
+          <option value="6">6반으로 고정</option>
+          <option value="7">7반으로 고정</option>
+          <option value="8">8반으로 고정</option>
+          <option value="9">9반으로 고정</option>
+          <option value="10">10반으로 고정</option>
+          <option value="11">11반으로 고정</option>
+          <option value="12">12반으로 고정</option>
+          <option value="13">13반으로 고정</option>
+          <option value="14">14반으로 고정</option>
+          <option value="15">15반으로 고정</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="row2" id="range-row">
+      <div id="class-max-wrap">
         <label for="class-max">반은 몇 반까지</label>
         <input type="number" id="class-max" min="1" max="15" value="7" inputmode="numeric">
       </div>
@@ -50,6 +75,10 @@
       <span id="result-link"></span>
       <button type="button" id="copy-link-btn" class="btn btn-ghost">🔗 복사하기</button>
       <p id="copy-link-status" class="status-text" aria-live="polite"></p>
+      <div id="qr-box">
+        <div id="qr-canvas-wrap"></div>
+        <button type="button" id="download-qr-btn" class="btn btn-ghost">⬇️ QR 다운로드</button>
+      </div>
     </div>
 
     <p class="note-text">이 번호는 어디에도 저장되지 않아요. 링크 안에만 담겨서 전달돼요.</p>
@@ -64,7 +93,7 @@
       <legend>학년 / 반 / 번호</legend>
       <div class="row3">
         <div id="grade-slot"></div>
-        <select id="class-select" aria-label="반 선택"></select>
+        <div id="class-slot"></div>
         <select id="number-select" aria-label="번호 선택"></select>
       </div>
     </fieldset>
@@ -87,6 +116,7 @@
   </section>
 
 </main>
+<script src="qrcode.min.js"></script>
 <script src="script.js"></script>
 </body>
 </html>
